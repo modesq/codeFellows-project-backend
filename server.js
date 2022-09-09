@@ -13,7 +13,7 @@ server.use(express.json());
 
 //IP : http://localhost:PORT
 
-const PORT = process.env.PORT || 3010;
+const PORT = process.env.PORT;
 
 // const mongoURL = process.env.MONGO
 // // mongoose config
@@ -42,6 +42,7 @@ const PORT = process.env.PORT || 3010;
 //Routes
 server.get('/', homeHandler);
 server.get('/test', testHandler);
+server.get('*', defualtHandler);
 
 // http://localhost:3000/
 function homeHandler(req, res) {
