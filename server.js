@@ -30,7 +30,7 @@ const PORT = process.env.PORT;
 //seed data (insert initial data)
 
 // async function seedData() {
-  
+
 
 //   await firstBook.save();
 //   await secondBook.save();
@@ -43,6 +43,7 @@ const PORT = process.env.PORT;
 server.get('/', homeHandler);
 server.get('/test', testHandler);
 server.get('*', defualtHandler);
+server.get('/news', getNews)
 
 // http://localhost:3000/
 function homeHandler(req, res) {
@@ -63,3 +64,29 @@ function defualtHandler(req, res) {
 server.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 })
+
+function getNews() {
+
+  const news = new News(NewYorktimes, AP, TheGuardian)
+
+}
+
+let NewYorktimes = function getNewYorktimes() {
+
+}
+
+let AP = function getAP() {
+
+}
+
+let TheGuardian = function getTheGuardian() {
+
+}
+
+class news {
+  constructor(NewYorktimes, AP, TheGuardian) {
+    this.NewYorktimes = NewYorktimes;
+    this.AP = AP;
+    this.TheGuardian = TheGuardian;
+  }
+}
