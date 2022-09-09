@@ -5,6 +5,8 @@ const express = require('express');
 const cors = require('cors');
 const { response } = require('express');
 const mongoose = require('mongoose'); // 0 - import mongoose
+const { parse } = require('dotenv');
+const axios = require('axios');
 
 const server = express();
 
@@ -42,8 +44,9 @@ const PORT = process.env.PORT;
 //Routes
 server.get('/', homeHandler);
 server.get('/test', testHandler);
-server.get('*', defualtHandler);
 server.get('/news', getNews)
+server.get('*', defualtHandler);
+
 
 // http://localhost:3000/
 function homeHandler(req, res) {
@@ -60,33 +63,79 @@ function defualtHandler(req, res) {
   res.status(404).send("Sorry, Page not found");
 }
 
+// http://localhost:3000/news
+async function getNews(req, res) {
+  let allArticles = []
+  for (const news of allNews) {
+    let articles = await news.getNews()
+    allArticles.push(...articles)
+  }
+  res.send(allArticles)
+}
+
 // listener
 server.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 })
 
-function getNews() {
+class GNews {
+  async getNews() {
+    var result = await axios.get(`https://newsapi.org/v2/everything?q=default&apiKey=${process.env.NEWSAPI_KEY}`)
+    return this.parseArticles(result)
+  }
+  async searchNews(query) {
+    try {
+    var result = await axios.get(`https://newsapi.org/v2/everything?q=${query}&apiKey=${process.env.NEWSAPI_KEY}`)
+    return this.parseArticles(result);
+    } catch (e) {
+      console.log(e);
+      console.log("error in search in GNews");
+      return undefined;
+    }
+  }
 
-  const news = new News(NewYorktimes, AP, TheGuardian)
-
+  parseArticles(res) {
+    return res.data.articles.map((article) => {
+      return new Article(article.title, article.description, article.content, article.image, article.publishedAt, article.source.name, article.url)
+    });
+  }
 }
 
-let NewYorktimes = function getNewYorktimes() {
+class NewsAPI {
+  async getNews() {
+    var result = await axios.get(`https://gnews.io/api/v4/search?q=default&token=${process.env.GNEWS_API_KEY}`)
+    return this.parseArticles(result)
+  }
+  async searchNews(query) {
+    try {
+    var result = await axios.get(`https://gnews.io/api/v4/search?q=${query}&token=${process.env.GNEWS_API_KEY}`)
+    return this.parseArticles(result);
+    }
+    catch (e) {
+      console.log(e);
+      console.log("error in search in NewsAPI");
+      return undefined;
 
+    }
+  }
+
+  parseArticles(res) {
+    return res.data.articles.map((article) => {
+      return new Article(article.title, article.description, article.content, article.image, article.publishedAt, article.source.name, article.url)
+    });
+  }
 }
 
-let AP = function getAP() {
+const allNews = [new GNews(), new NewsAPI()]
 
-}
-
-let TheGuardian = function getTheGuardian() {
-
-}
-
-class news {
-  constructor(NewYorktimes, AP, TheGuardian) {
-    this.NewYorktimes = NewYorktimes;
-    this.AP = AP;
-    this.TheGuardian = TheGuardian;
+class Article {
+  constructor(headline, description, content, image, date, source, url) {
+    this.headline = headline;
+    this.description = description;
+    this.content = content;
+    this.image = image;
+    this.date = date
+    this.source = source;
+    this.url = url;
   }
 }
